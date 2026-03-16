@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
@@ -14,8 +16,9 @@
 
   let { album }: Props = $props();
   let abortController: AbortController;
-  let { setAssetId } = assetViewingStore;
+  let { isViewing } = assetViewingStore;
 
+  let returnToMap = $state(false);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
   onMount(async () => {
@@ -25,6 +28,13 @@
   onDestroy(() => {
     abortController?.abort();
     assetViewingStore.showAssetViewer(false);
+  });
+
+  $effect(() => {
+    if (!$isViewing && returnToMap) {
+      returnToMap = false;
+      void openMap();
+    }
   });
 
   async function loadMapMarkers() {
@@ -56,7 +66,10 @@
     const assetIds = await modalManager.show(MapModal, { mapMarkers });
 
     if (assetIds) {
-      await setAssetId(assetIds[0]);
+      await goto(Route.viewAlbumAsset({ albumId: album.id, assetId: assetIds[0] }));
+      returnToMap = true;
+    } else {
+      returnToMap = false;
     }
   }
 </script>
