@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
-  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
@@ -66,7 +65,7 @@
     const assetIds = await modalManager.show(MapModal, { mapMarkers });
 
     if (assetIds) {
-      await goto(Route.viewAlbumAsset({ albumId: album.id, assetId: assetIds[0] }));
+      await navigate({ targetRoute: 'current', assetId: assetIds[0] });
       returnToMap = true;
     } else {
       returnToMap = false;
